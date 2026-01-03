@@ -6,6 +6,7 @@ pub fn main() !void {
     const reader = &stdin.interface;
 
     var count_lines = false;
+    var count_bytes = false;
 
     var args = std.process.args();
     _ = args.skip();
@@ -13,14 +14,16 @@ pub fn main() !void {
     while (args.next()) |arg| {
         if (std.mem.eql(u8, arg, "-l")) {
             count_lines = true;
+        } else if (std.mem.eql(u8, arg, "-b")) {
+            count_bytes = true;
         }
     }
 
-    const sum = count(reader, count_lines);
+    const sum = count(reader, count_lines, count_bytes);
     std.debug.print("sum: {d}\n", .{sum});
 }
 
-fn count(reader: *std.Io.Reader, count_lines: bool) i32 {
+fn count(reader: *std.Io.Reader, count_lines: bool, count_bytes: bool) i32 {
     const contents = reader.allocRemaining(std.heap.page_allocator, .unlimited) catch return 0;
 
     var it: std.mem.TokenIterator(u8, .any) = undefined;
@@ -28,6 +31,11 @@ fn count(reader: *std.Io.Reader, count_lines: bool) i32 {
 
     if (count_lines) {
         it = std.mem.tokenizeAny(u8, contents, "\n");
+    } else if (count_bytes) {
+        for (contents) |_| {
+            wc += 1;
+        }
+        return wc;
     } else {
         it = std.mem.tokenizeAny(u8, contents, " \n\t\r");
     }
@@ -42,13 +50,20 @@ fn count(reader: *std.Io.Reader, count_lines: bool) i32 {
 test "test count words" {
     var reader = std.Io.Reader.fixed("word1 word2 word3 word4");
 
-    const s = count(&reader, false);
-    try std.testing.expectEqual(s, 4);
+    const s = count(&reader, false, false);
+    try std.testing.expectEqual(4, s);
 }
 
 test "test count lines" {
     var reader = std.Io.Reader.fixed("word1 word2 word3\nline2\nline3 word1");
 
-    const s = count(&reader, true);
-    try std.testing.expectEqual(s, 3);
+    const s = count(&reader, true, false);
+    try std.testing.expectEqual(3, s);
+}
+
+test "test count bytes" {
+    var reader = std.Io.Reader.fixed("word1\nword2");
+
+    const s = count(&reader, false, true);
+    try std.testing.expectEqual(11, s);
 }
