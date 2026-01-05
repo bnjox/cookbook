@@ -1,0 +1,20 @@
+.{
+    .name = .wc,
+    .version = "0.0.1",
+    .fingerprint = 0xf51ccd2c35619a0e, // Changing this has security and trust implications.
+    .minimum_zig_version = "0.15.2",
+    .dependencies = .{
+        .flags = .{
+            .url = "git+https://github.com/atisans/flags.zig#5dff491e653bd30dd75e9cbdcb1631e74295dd5e",
+            .hash = "flags-0.0.1-GjWK4moSAAD4YNIgnRZPpjS0tKyEKxhw0QvvcQiQ0GWF",
+        },
+    },
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+        // For example...
+        //"LICENSE",
+        //"README.md",
+    },
+}

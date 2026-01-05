@@ -13,6 +13,9 @@ pub fn build(b: *std.Build) void {
         }),
     });
 
+    const flags = b.dependency("flags", .{});
+    exe.root_module.addImport("flags", flags.module("flags"));
+
     b.installArtifact(exe);
 
     // This creates a top level step when running `zig build` (e.g. `zig build run`).

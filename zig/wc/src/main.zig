@@ -1,23 +1,14 @@
 const std = @import("std");
+const flags = @import("flags");
 
 pub fn main() !void {
     var buffer: [1024]u8 = undefined;
     var stdin = std.fs.File.stdin().reader(&buffer);
     const reader = &stdin.interface;
 
-    var count_lines = false;
-    var count_bytes = false;
-
-    var args = std.process.args();
-    _ = args.skip();
-
-    while (args.next()) |arg| {
-        if (std.mem.eql(u8, arg, "-l")) {
-            count_lines = true;
-        } else if (std.mem.eql(u8, arg, "-b")) {
-            count_bytes = true;
-        }
-    }
+    _ = try flags.parse();
+    const count_lines = flags.boolean("l", false, "count lines");
+    const count_bytes = flags.boolean("b", false, "count bytes");
 
     const sum = count(reader, count_lines, count_bytes);
     std.debug.print("sum: {d}\n", .{sum});
