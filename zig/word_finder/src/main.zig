@@ -18,8 +18,18 @@ pub fn main() !void {
     defer allocator.free(replaced);
 
     const count = std.mem.replace(u8, contents, "utilize", "use", replaced);
+    var buffer: [100]u8 = undefined;
+    var stdin = std.fs.File.stdin();
+    var reader = stdin.reader(&buffer);
 
-    const output_filepath = try std.mem.concat(allocator, u8, &.{ current_dir, "/data/output.txt" });
+    std.debug.print("Name of output file: ", .{});
+    const output_file = try reader.interface.takeDelimiterExclusive('\n');
+
+    const output_filepath = try std.mem.concat(allocator, u8, &.{
+        current_dir,
+        "/data/",
+        if (output_file.len == 0) "output.txt" else output_file,
+    });
     defer allocator.free(output_filepath);
     try write_to_file(output_filepath, replaced);
 
