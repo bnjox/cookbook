@@ -26,9 +26,28 @@ pub fn main() !void {
             continue;
         };
 
-        const formatter = try std.json.Stringify.valueAlloc(allocator, .{
-            .message = "Hello, JSON From Zig",
-        }, .{});
+        const now_seconds: u64 = @intCast(std.time.timestamp());
+        const epoch_secs = std.time.epoch.EpochSeconds{ .secs = now_seconds };
+        const epoch_day = epoch_secs.getEpochDay();
+        const day_seconds = epoch_secs.getDaySeconds();
+        const year_day = epoch_day.calculateYearDay();
+        const month_day = year_day.calculateMonthDay();
+
+        const month_names = [_][]const u8{ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
+        const month_name = month_names[@intFromEnum(month_day.month) - 1];
+
+        const current_time = try std.fmt.allocPrint(allocator, "{d:0>2}:{d:0>2}:{d:0>2} UTC {s} {d} {d}", .{
+            day_seconds.getHoursIntoDay(),
+            day_seconds.getMinutesIntoHour(),
+            day_seconds.getSecondsIntoMinute(),
+            month_name,
+            month_day.day_index + 1,
+            year_day.year,
+        });
+        defer allocator.free(current_time);
+
+        const formatter = try std.json.Stringify.valueAlloc(allocator, .{ .currentTime = current_time }, .{});
+        std.debug.print("Timestamp: {s}\n", .{current_time});
 
         try request.respond(formatter, .{
             .extra_headers = &.{
