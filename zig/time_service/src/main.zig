@@ -1,20 +1,16 @@
 const std = @import("std");
 
-const server_address = .{ 127, 0, 0, 1 };
-const server_port = 5000;
-
 pub fn main() !void {
     var gpa: std.heap.DebugAllocator(.{}) = .init;
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
     _ = allocator; // autofix
 
-    const address = std.net.Address.initIp4(server_address, server_port);
+    const address = std.net.Address.initIp4(.{ 127, 0, 0, 1 }, 5000);
     var server = try address.listen(.{ .reuse_address = true });
-    std.debug.print("Server is running at {s}:{d}\n", .{ "127.0.0.1", server_port });
+    std.debug.print("Server is running at {s}:{d}\n", .{ "127.0.0.1", address.getPort() });
     defer server.deinit();
 
-    // outer:
     while (true) {
         var connection = try server.accept();
         defer connection.stream.close();
