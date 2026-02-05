@@ -4,7 +4,6 @@ pub fn main() !void {
     var gpa: std.heap.DebugAllocator(.{}) = .init;
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
-    _ = allocator; // autofix
 
     const address = std.net.Address.initIp4(.{ 127, 0, 0, 1 }, 5000);
     var server = try address.listen(.{ .reuse_address = true });
@@ -27,6 +26,14 @@ pub fn main() !void {
             continue;
         };
 
-        try request.respond("Hello, World!!\nFrom zig backend...\n", .{});
+        const formatter = try std.json.Stringify.valueAlloc(allocator, .{
+            .message = "Hello, JSON From Zig",
+        }, .{});
+
+        try request.respond(formatter, .{
+            .extra_headers = &.{
+                .{ .name = "Content-Type", .value = "application/json" },
+            },
+        });
     }
 }
